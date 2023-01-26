@@ -1,0 +1,63 @@
+<body>
+  <div class="center">
+    <form onsubmit="generateShortUrl(event)">
+      <input type="text" id="long_url" name="long_url" placeholder="Long URL">
+      <span id="error"></span>
+      <input type="submit" value="Shorten">
+      <div id="result">
+        <p class="short-url">Shortened URL: <a id="short_url_link"/></p>
+        <button id="copy_url_button" onclick="copyURL(event)">Copy</button>
+      </div>
+    </form>
+  </div>
+</body>
+
+<script>
+
+  const errorElement = document.getElementById("error")
+  const resultElement = document.getElementById("result")
+  const shortURLElement = document.getElementById("short_url_link")
+  const copyURLElement = document.getElementById("copy_url_button")
+  const urlRegex = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
+
+  function generateShortUrl(event) {
+    event.preventDefault();
+    errorElement.textContent = ""
+    copyURLElement.textContent = "Copy"
+    const longURL = document.getElementById("long_url").value
+    if(urlRegex.test(longURL)) {
+      $.ajax({
+        type: "POST",
+        url: window.location.href,
+        data: JSON.stringify({ "longURL": longURL }),
+        contentType: "application/json",
+        success: function(data) {
+          let url = window.location.href + data.shortURL
+          resultElement.style.display = "block"
+          shortURLElement.textContent = url
+          shortURLElement.href = url
+        },
+        error: function(error) {
+          if(error.status == 400) {
+            error.textContent = "Please enter a valid URL"
+          } else if(error.status == 409) {
+            let url = window.location.href + error.responseJSON.shortURL
+            resultElement.style.display = "block"
+            shortURLElement.textContent = url
+            shortURLElement.href = url
+          } else {
+            errorElement.textContent = "Something went wrong. Please try again later"
+          }
+        }
+      });
+    } else {
+      error.textContent = "Please enter a valid URL"
+    }
+  }
+
+  function copyURL(event) {
+    event.preventDefault()
+    navigator.clipboard.writeText(shortURLElement.textContent)
+    copyURLElement.textContent = "Copied!"
+  }
+</script>
