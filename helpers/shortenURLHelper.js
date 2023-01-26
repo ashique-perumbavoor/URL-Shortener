@@ -29,7 +29,7 @@ module.exports ={
 
   redirectToURL: async function(req, res) {
     let dbResult = await db.getDB().collection(urlCollection).findOne({shortURL: req.params.id})
-    let longURL = dbResult.longURL
+    let longURL = dbResult?.longURL
     if(longURL != null || longURL != undefined) {
       if(!longURL.startsWith('http://') && !longURL.startsWith('https://')) {
         longURL = 'http://' + longURL
